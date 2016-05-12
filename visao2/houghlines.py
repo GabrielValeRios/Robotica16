@@ -22,7 +22,7 @@ if __name__ == '__main__':
     try:
         fn = sys.argv[1]
     except IndexError:
-        fn = "./pic1.png"
+        fn = "calculadora.png"
 
     src = cv2.imread(fn)
     dst = cv2.Canny(src, 50, 200)
@@ -33,8 +33,11 @@ if __name__ == '__main__':
         a,b,c = lines.shape
         for i in range(a):
             cv2.line(cdst, (lines[i][0][0], lines[i][0][1]), (lines[i][0][2], lines[i][0][3]), (0, 0, 255), 3, cv2.CV_AA)
-        print("Used Probabilistic Rough Transform")
-        print("The probabilistic hough transform returns the end points of the detected lines")
+
+
+        print(lines)
+        #print("Used Probabilistic Rough Transform")
+        #print("The probabilistic hough transform returns the end points of the detected lines")
 
     else:    # HoughLines
         lines = cv2.HoughLines(dst, 1, math.pi/180.0, 50, np.array([]), 0, 0)
@@ -48,7 +51,7 @@ if __name__ == '__main__':
             pt1 = ( int(x0+1000*(-b)), int(y0+1000*(a)) )
             pt2 = ( int(x0-1000*(-b)), int(y0-1000*(a)) )
             cv2.line(cdst, pt1, pt2, (0, 0, 255), 3, cv2.CV_AA)
-        print("Used old vanilla Hough transform")
+        #print("Used old vanilla Hough transform")
 
     cv2.imshow("source", src)
     cv2.imshow("detected lines", cdst)
