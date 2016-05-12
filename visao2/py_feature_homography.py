@@ -4,7 +4,7 @@ import cv2
 from matplotlib import pyplot as plt
 
 # Adaptado da documentacao em http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_feature2d/py_feature_homography/py_feature_homography.html
-# Com a funcao drawMatches do usuario 
+# Com a funcao drawMatches do usuario
 
 def drawMatches(img1, kp1, img2, kp2, matches):
     """
@@ -15,8 +15,8 @@ def drawMatches(img1, kp1, img2, kp2, matches):
     does not have this function available but it's supported in
     OpenCV 3.0.0
 
-    This function takes in two images with their associated 
-    keypoints, as well as a list of DMatch data structure (matches) 
+    This function takes in two images with their associated
+    keypoints, as well as a list of DMatch data structure (matches)
     that contains which keypoints matched in which images.
 
     An image will be produced where a montage is shown with
@@ -26,7 +26,7 @@ def drawMatches(img1, kp1, img2, kp2, matches):
     between matching keypoints.
 
     img1,img2 - Grayscale images
-    kp1,kp2 - Detected list of keypoints through any of the OpenCV keypoint 
+    kp1,kp2 - Detected list of keypoints through any of the OpenCV keypoint
               detection algorithms
     matches - A list of matches of corresponding keypoints through any
               OpenCV keypoint matching algorithm
@@ -69,7 +69,7 @@ def drawMatches(img1, kp1, img2, kp2, matches):
         # radius 4
         # colour blue
         # thickness = 1
-        cv2.circle(out, (int(x1),int(y1)), 4, (255, 0, 0), 1)   
+        cv2.circle(out, (int(x1),int(y1)), 4, (255, 0, 0), 1)
         cv2.circle(out, (int(x2)+cols1,int(y2)), 4, (255, 0, 0), 1)
 
         # Draw a line in between the two points
@@ -89,7 +89,12 @@ def drawMatches(img1, kp1, img2, kp2, matches):
 
 MIN_MATCH_COUNT = 10
 
+<<<<<<< HEAD
 img1 = cv2.imread('box.png',0)          # queryImage
+=======
+img1 = cv2.imread('box.png',0)          # Imagem a procurar
+img2 = cv2.imread('box_in_scene.png',0) # Imagem do cenario - puxe do video para fazer isto
+>>>>>>> upstream/master
 
 while True:
     img2 = cv2.imread('box_in_scene.png',0) # trainImage
@@ -99,17 +104,31 @@ while True:
     # Initiate SIFT detector
     sift = cv2.SIFT()
 
+<<<<<<< HEAD
     # find the keypoints and descriptors with SIFT
     kp1, des1 = sift.detectAndCompute(img1,None)
     kp2, des2 = sift.detectAndCompute(img2,None)
+=======
+# find the keypoints and descriptors with SIFT in each image
+kp1, des1 = sift.detectAndCompute(img1,None)
+kp2, des2 = sift.detectAndCompute(img2,None)
+>>>>>>> upstream/master
 
     FLANN_INDEX_KDTREE = 0
     index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
     search_params = dict(checks = 50)
 
+<<<<<<< HEAD
     flann = cv2.FlannBasedMatcher(index_params, search_params)
 
     matches = flann.knnMatch(des1,des2,k=2)
+=======
+# Configura o algoritmo de casamento de features
+flann = cv2.FlannBasedMatcher(index_params, search_params)
+
+# Tenta fazer a melhor comparacao usando o algoritmo
+matches = flann.knnMatch(des1,des2,k=2)
+>>>>>>> upstream/master
 
     # store all the good matches as per Lowe's ratio test.
     good = []
@@ -117,6 +136,7 @@ while True:
         if m.distance < 0.7*n.distance:
             good.append(m)
 
+<<<<<<< HEAD
     if len(good)>MIN_MATCH_COUNT:
         src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
         dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
@@ -129,6 +149,27 @@ while True:
         dst = cv2.perspectiveTransform(pts,M)
 
         img2b = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.CV_AA)
+=======
+
+if len(good)>MIN_MATCH_COUNT:
+    # Separa os bons matches na origem e no destino
+    src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
+    dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
+
+
+    # Tenta achar uma trasformacao composta de rotacao, translacao e escala que situe uma imagem na outra
+    M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+    matchesMask = mask.ravel().tolist()
+
+    h,w = img1.shape
+    pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+
+    # Transforma os pontos da imagem origem para onde estao na imagem destino
+    dst = cv2.perspectiveTransform(pts,M)
+
+    # Desenha as linhas
+    img2b = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.CV_AA)
+>>>>>>> upstream/master
 
     else:
         print "Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT)

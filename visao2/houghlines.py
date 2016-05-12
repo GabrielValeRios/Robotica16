@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#-*- coding:utf-8 -*-
 
 '''
 This example illustrates how to use Hough Transform to find lines
@@ -25,10 +26,11 @@ if __name__ == '__main__':
         fn = "calculadora.png"
 
     src = cv2.imread(fn)
-    dst = cv2.Canny(src, 50, 200)
-    cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
+    dst = cv2.Canny(src, 50, 200) # aplica o detector de bordas de Canny à imagem src
+    cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR) # Converte a imagem para BGR para permitir desenho colorido
 
     if True: # HoughLinesP
+<<<<<<< HEAD
         lines = cv2.HoughLinesP(dst, 1, math.pi/180.0, 40, np.array([]), 50, 10)
         a,b,c = lines.shape
         for i in range(a):
@@ -38,8 +40,19 @@ if __name__ == '__main__':
         print(lines)
         #print("Used Probabilistic Rough Transform")
         #print("The probabilistic hough transform returns the end points of the detected lines")
+=======
+        lines = cv2.HoughLinesP(dst, 1, math.pi/180.0, 15, np.array([]), 5, 5)
+        print("Used Probabilistic Rough Transform")
+        print("The probabilistic hough transform returns the end points of the detected lines")
+        a,b,c = lines.shape
+        print("Valor de A",a, "valor de lines.shape", lines.shape)
+        for i in range(b):
+            # Faz uma linha ligando o ponto inicial ao ponto final, com a cor vermelha (BGR)
+            cv2.line(cdst, (lines[0][i][0], lines[0][i][1]), (lines[0][i][2], lines[0][i][3]), (0, 0, 255), 3, cv2.CV_AA)
+>>>>>>> upstream/master
 
     else:    # HoughLines
+        # Esperemos nao cair neste caso
         lines = cv2.HoughLines(dst, 1, math.pi/180.0, 50, np.array([]), 0, 0)
         a,b,c = lines.shape
         for i in range(a):
@@ -51,7 +64,12 @@ if __name__ == '__main__':
             pt1 = ( int(x0+1000*(-b)), int(y0+1000*(a)) )
             pt2 = ( int(x0-1000*(-b)), int(y0-1000*(a)) )
             cv2.line(cdst, pt1, pt2, (0, 0, 255), 3, cv2.CV_AA)
+<<<<<<< HEAD
         #print("Used old vanilla Hough transform")
+=======
+        print("Used old vanilla Hough transform")
+        print("Returned points will be radius and angles")
+>>>>>>> upstream/master
 
     cv2.imshow("source", src)
     cv2.imshow("detected lines", cdst)
