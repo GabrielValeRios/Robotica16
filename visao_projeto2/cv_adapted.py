@@ -108,78 +108,80 @@ def my_calibration(sz):
     K[1,2] = 0.5*row
     return K
 
-img0_name = "montgomery_800_600.jpg"
-img1_name = "montgomery_floor_800_600.jpg"
+img0_name = "visao_2_foto_nova.jpg"  
+cap = cv2.VideoCapture("video_visao2.mp4") 
 
 
 img0 = cv2.imread(img0_name)
-print("Input cv image", img0.shape)
+#print("Input cv image", img0.shape)
 img0 = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
 
 
 cv_sift = cv2.SIFT()
 
+while True:
+    
+    ret, img1 = cap.read()
+    #img1 = cv2.imread('frame',0) 
+    #img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
 
-img1 = cv2.imread(img1_name)
-img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-
-kp0, desc0 = cv_sift.detectAndCompute(img0, None)
-kp1, desc1 = cv_sift.detectAndCompute(img1, None)
-
-
-# We use OpenCV instead of the calculus of the homography present in the book
-H = find_homography(kp0, desc0, kp1, desc1)
+    kp0, desc0 = cv_sift.detectAndCompute(img0, None)
+    kp1, desc1 = cv_sift.detectAndCompute(img1, None)
 
 
-# Note: always resize image to 747 x 1000 or change the K below
+    # We use OpenCV instead of the calculus of the homography present in the book
+    H = find_homography(kp0, desc0, kp1, desc1)
 
 
-# camera calibration
-K = my_calibration((747,1000))
-
-# 3D points at plane z=0 with sides of length 0.2
-box = cube_points([0,0,0.1],0.1)
-
-# project bottom square in first image
-cam1 = camera.Camera( hstack((K,dot(K,array([[0],[0],[-1]])) )) )
-# first points are the bottom square
-box_cam1 = cam1.project(homography.make_homog(box[:,:5]))
+    # Note: always resize image to 747 x 1000 or change the K below
 
 
-# use H to transfer points to the second image
-box_trans = homography.normalize(dot(H,box_cam1))
+    # camera calibration
+    K = my_calibration((747,1000))
 
-# compute second camera matrix from cam1 and H
-cam2 = camera.Camera(dot(H,cam1.P))
-A = dot(linalg.inv(K),cam2.P[:,:3])
-A = array([A[:,0],A[:,1],cross(A[:,0],A[:,1])]).T
-cam2.P[:,:3] = dot(K,A)
+    # 3D points at plane z=0 with sides of length 0.2
+    box = cube_points([0,0,0.1],0.1)
 
-# project with the second camera
-box_cam2 = cam2.project(homography.make_homog(box))
-
+    # project bottom square in first image
+    cam1 = camera.Camera( hstack((K,dot(K,array([[0],[0],[-1]])) )) )
+    # first points are the bottom square
+    box_cam1 = cam1.project(homography.make_homog(box[:,:5]))
 
 
-# plotting
-im0 = array(Image.open(img0_name))
-im1 = array(Image.open(img1_name))
+    # use H to transfer points to the second image
+    box_trans = homography.normalize(dot(H,box_cam1))
 
-figure()
-imshow(im0)
-plot(box_cam1[0,:],box_cam1[1,:],linewidth=3)
-title('2D projection of bottom square')
-axis('off')
+    # compute second camera matrix from cam1 and H
+    cam2 = camera.Camera(dot(H,cam1.P))
+    A = dot(linalg.inv(K),cam2.P[:,:3])
+    A = array([A[:,0],A[:,1],cross(A[:,0],A[:,1])]).T
+    cam2.P[:,:3] = dot(K,A)
 
-figure()
-imshow(im1)
-plot(box_trans[0,:],box_trans[1,:],linewidth=3)
-title('2D projection transfered with H')
-axis('off')
+    # project with the second camera
+    box_cam2 = cam2.project(homography.make_homog(box))
 
-figure()
-imshow(im1)
-plot(box_cam2[0,:],box_cam2[1,:],linewidth=3)
-title('3D points projected in second image')
-axis('off')
 
-show()
+
+    # plotting
+    im0 = array(Image.open(img0_name))
+    im1 = array(Image.open(img1_name))
+
+    figure()
+    imshow(im0)
+    plot(box_cam1[0,:],box_cam1[1,:],linewidth=3)
+    title('2D projection of bottom square')
+    axis('off')
+
+    figure()
+    imshow(im1)
+    plot(box_trans[0,:],box_trans[1,:],linewidth=3)
+    title('2D projection transfered with H')
+    axis('off')
+
+    figure()
+    imshow(im1)
+    plot(box_cam2[0,:],box_cam2[1,:],linewidth=3)
+    title('3D points projected in second image')
+    axis('off')
+
+    show()
